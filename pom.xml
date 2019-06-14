@@ -91,6 +91,13 @@
             <version>1.1.15</version>
         </dependency>
 
+        <!-- 在实体类中用@Data注解可以不用写get set 方法了-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.8</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

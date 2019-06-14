@@ -2,9 +2,9 @@ package life.majiang.community.community.controller;
 
 import life.majiang.community.community.dto.AccessTokenDTO;
 import life.majiang.community.community.dto.GitHubUser;
-import life.majiang.community.community.mapper.UserMapper;
 import life.majiang.community.community.pojo.User;
 import life.majiang.community.community.provider.GitHubProvider;
+import life.majiang.community.community.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,7 +31,7 @@ public class AuthorizeController {
     private String redirectUri;
 
     @Resource
-    private UserMapper userMapper;
+    private UserService userServiceImpl;
 
     @GetMapping("/callback")
     public String callback(@RequestParam(name = "code")String code,
@@ -46,21 +46,23 @@ public class AuthorizeController {
         accessTokenDTO.setState(state);
         String accessToken = gitHubProvider.getAccessToken(accessTokenDTO);
         GitHubUser gitHubUser = gitHubProvider.getUser(accessToken);
+        System.out.println(gitHubUser.getAvatar_url());
         if(gitHubUser != null){
             //登录成功
             User user = new User();
+            System.out.println(gitHubUser.getName());
             String token = UUID.randomUUID().toString();
             user.setToken(token);
             user.setName(gitHubUser.getName());
             user.setAccountId(String.valueOf(gitHubUser.getId()));
             user.setGmtCreate(System.currentTimeMillis());
             user.setGmtModified(user.getGmtCreate());
-            if(userMapper.findByAccountId(user.getAccountId()) != 0){
-                userMapper.update(user);
+            user.setAvatarUrl(gitHubUser.getAvatar_url());
+            if(userServiceImpl.findByAccountId(user.getAccountId()) != 0){
+                userServiceImpl.update(user);
             }else{
-                userMapper.insert(user);
+                userServiceImpl.insert(user);
             }
-
 
             //登录成功，写cookie
             response.addCookie(new Cookie("token", token));
