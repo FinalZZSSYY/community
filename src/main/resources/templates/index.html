@@ -58,7 +58,7 @@
             <h2 > <span class="glyphicon glyphicon-list" aria-hidden="true"></span>发现</h2>
             <hr>
 
-            <div class="media" th:each="question : ${questions}">
+            <div class="media" th:each="question : ${pagination.pageList}">
                 <div class="media-left">
                     <a href="#">
                         <img class="media-object img-rounded" th:src="${question.user.avatarUrl}" >
@@ -70,11 +70,44 @@
                     <span class="text-desc">
                         <span th:text="${question.commentCount}"></span> 个回复 ·
                         <span th:text="${question.viewCount}"></span> 次浏览 ·
-                        <span th:text="${#dates.format(question.gmtCreate,'yyyy MM dd')}"></span>
+                        <span th:text="${#dates.format(question.gmtCreate,'yyyy-MM-dd HH:mm')}"></span>
                     </span>
 
                 </div>
             </div>
+        <!-- bootstrap 分页 -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <li th:if="${pagination.showFirstPage}">
+                        <a href="/?page=1" aria-label="Previous">
+                            <span aria-hidden="true">&lt;&lt;</span>
+                        </a>
+                    </li>
+                    <li th:if="${pagination.showPrevious}">
+                        <a th:href="@{/(pageNum=${pagination.pageNum-1})}" aria-label="Previous">
+                            <span aria-hidden="true">&lt;</span>
+                        </a>
+                    </li>
+
+                    <li th:each="page : ${pagination.pagesNum}" th:class="${pagination.pageNum == page}?'active':''">
+                        <a th:href="@{/(pageNum=${page})}" th:text="${page}" >
+
+                        </a>
+                    </li>
+
+                    <li th:if="${pagination.showNext}">
+                        <a th:href="@{/(pageNum=${pagination.pageNum+1})}" aria-label="Next">
+                            <span aria-hidden="true">&gt;</span>
+                        </a>
+                    </li>
+                    <li th:if="${pagination.showEndPage}">
+                        <a th:href="@{/(pageNum=${pagination.totalPage})}" aria-label="Next">
+                            <span aria-hidden="true">&gt;&gt;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        <!-- bootstrap 分页 -->
 
         </div>
 

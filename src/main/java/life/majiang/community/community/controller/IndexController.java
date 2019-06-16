@@ -1,17 +1,17 @@
 package life.majiang.community.community.controller;
 
-import life.majiang.community.community.dto.QuestionDTO;
+import life.majiang.community.community.dto.PaginationDTO;
 import life.majiang.community.community.pojo.User;
 import life.majiang.community.community.service.QuestionService;
 import life.majiang.community.community.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 @Controller
 public class IndexController {
@@ -23,7 +23,10 @@ public class IndexController {
     private QuestionService questionServiceImpl;
 
     @GetMapping("/")
-    public String index(HttpServletRequest request, Model model){
+    public String index(HttpServletRequest request,
+                        Model model,
+                        @RequestParam(name = "pageNum",defaultValue = "1")Integer pageNum,
+                        @RequestParam(name = "pageSize",defaultValue = "5")Integer pageSize){
         Cookie[] cookies = request.getCookies();
         if(cookies != null && cookies.length != 0){
             for (Cookie cookie :cookies){
@@ -40,9 +43,10 @@ public class IndexController {
             }
 
         }
+        PaginationDTO pagination = questionServiceImpl.list(pageNum,pageSize);
 
-        List<QuestionDTO> questionList = questionServiceImpl.list();
-        model.addAttribute("questions", questionList);
+
+        model.addAttribute("pagination", pagination);
         return "index";
     }
 }
