@@ -25,6 +25,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public User findByToken(String token) {
+
         return userMapper.findByToken(token);
     }
 }

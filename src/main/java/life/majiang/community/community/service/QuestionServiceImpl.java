@@ -62,7 +62,69 @@ public class QuestionServiceImpl implements QuestionService {
         return paginationDTO;
     }
 
-    public void create(Question question) {
-        questionMapper.create(question);
+
+
+    @Override
+    public PaginationDTO list(int userId, Integer pageNum, Integer pageSize) {
+        PaginationDTO paginationDTO = new PaginationDTO();
+        //查询页面总数
+        Integer totalCount = questionMapper.countByUserId(userId);
+
+        if(totalCount % pageSize == 0){
+            paginationDTO.setTotalPage(totalCount / pageSize);
+        }else{
+            paginationDTO.setTotalPage(totalCount / pageSize + 1);
+        }
+
+        if(pageNum < 1){
+            pageNum = 1;
+        }
+        if(pageNum > paginationDTO.getTotalPage()){
+            pageNum = paginationDTO.getTotalPage();
+        }
+        paginationDTO.setPageNum(pageNum);
+        //size*(page-1)
+        Integer offset = pageSize*(pageNum-1);
+        List<Question> questionList = questionMapper.listByUserId(userId,offset,pageSize);
+        List<QuestionDTO> questionDTOList = new ArrayList<>();
+
+        for (Question question : questionList) {
+            User user = userMapper.findById(question.getCreator());
+            QuestionDTO questionDTO = new QuestionDTO();
+            //将question中的值快速copy到questionDTO中
+            BeanUtils.copyProperties(question, questionDTO);
+            questionDTO.setUser(user);
+            questionDTOList.add(questionDTO);
+        }
+        paginationDTO.setPageList(questionDTOList);
+
+        paginationDTO.setPagintion();
+
+
+        return paginationDTO;
+    }
+
+    @Override
+    public QuestionDTO getById(Integer id) {
+        Question question = questionMapper.findById(id);
+        QuestionDTO questionDTO = new QuestionDTO();
+        //将question中的值快速copy到questionDTO中
+        BeanUtils.copyProperties(question, questionDTO);
+        User user = userMapper.findById(question.getCreator());
+        questionDTO.setUser(user);
+        return questionDTO;
+    }
+
+    @Override
+    public void createOrUpdate(Question question) {
+        if(question.getId() == null){
+            question.setGmtCreate(System.currentTimeMillis());
+            question.setGmtModified(question.getGmtModified());
+            questionMapper.create(question);
+        }else{
+            question.setGmtModified(System.currentTimeMillis());
+            questionMapper.update(question);
+        }
+
     }
 }

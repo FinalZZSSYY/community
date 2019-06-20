@@ -1,17 +1,17 @@
 package life.majiang.community.community.controller;
 
+import life.majiang.community.community.dto.QuestionDTO;
 import life.majiang.community.community.pojo.Question;
 import life.majiang.community.community.pojo.User;
 import life.majiang.community.community.service.QuestionService;
-import life.majiang.community.community.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Resource;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 @Controller
@@ -20,8 +20,17 @@ public class PublishController {
     @Resource
     private QuestionService questionServiceImpl;
 
-    @Resource
-    private UserService userServiceImpl;
+
+    @GetMapping("/publish/{id}")
+    public String edit(@PathVariable(name = "id")Integer id,
+                       Model model){
+        QuestionDTO questionDTO = questionServiceImpl.getById(id);
+        model.addAttribute("title", questionDTO.getTitle());
+        model.addAttribute("description", questionDTO.getDescription());
+        model.addAttribute("tag", questionDTO.getTag());
+        model.addAttribute("id", questionDTO.getId());
+        return "publish";
+    }
 
     @GetMapping("/publish")
     public String publish(){
@@ -29,7 +38,11 @@ public class PublishController {
     }
 
     @PostMapping("/publish")
-    public String dopublish(Model model, HttpServletRequest request, @RequestParam("title")String title, @RequestParam("description")String description, @RequestParam("tag")String tag){
+    public String dopublish(Model model, HttpServletRequest request,
+                            @RequestParam(value = "title",required = false)String title,
+                            @RequestParam(value = "description",required = false)String description,
+                            @RequestParam(value = "tag",required = false)String tag,
+                            @RequestParam(value = "id",required = false)Integer id){
 
         model.addAttribute("title", title);
         model.addAttribute("description", description);
@@ -47,22 +60,7 @@ public class PublishController {
             return "publish";
         }
 
-
-        User user = null;
-        Cookie[] cookies = request.getCookies();
-        if(cookies != null && cookies.length != 0){
-            for (Cookie cookie :cookies){
-                if(cookie.getName().equals("token")){
-                    String token = cookie.getValue();
-                    user = userServiceImpl.findByToken(token);
-                    if (user != null){
-                        request.getSession().setAttribute("user", user);
-                    }
-                    break;
-                }
-            }
-        }
-
+        User user = (User) request.getSession().getAttribute("user");
 
         if(user == null){
             model.addAttribute("error", "用户未登录");
@@ -75,9 +73,8 @@ public class PublishController {
         question.setDescription(description);
         question.setTag(tag);
         question.setCreator(user.getId());
-        question.setGmtCreate(System.currentTimeMillis());
-        question.setGmtModified(question.getGmtModified());
-        questionServiceImpl.create(question);
+        question.setId(id);
+        questionServiceImpl.createOrUpdate(question);
         return "redirect:/";//重定向
     }
 }
