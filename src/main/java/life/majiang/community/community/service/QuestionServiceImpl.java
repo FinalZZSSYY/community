@@ -2,6 +2,8 @@ package life.majiang.community.community.service;
 
 import life.majiang.community.community.dto.PaginationDTO;
 import life.majiang.community.community.dto.QuestionDTO;
+import life.majiang.community.community.exception.CustomizeErrorCode;
+import life.majiang.community.community.exception.CustomizeException;
 import life.majiang.community.community.mapper.QuestionMapper;
 import life.majiang.community.community.mapper.UserMapper;
 import life.majiang.community.community.pojo.Question;
@@ -107,6 +109,9 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public QuestionDTO getById(Integer id) {
         Question question = questionMapper.findById(id);
+        if (question == null){
+            throw  new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+        }
         QuestionDTO questionDTO = new QuestionDTO();
         //将question中的值快速copy到questionDTO中
         BeanUtils.copyProperties(question, questionDTO);
@@ -123,8 +128,16 @@ public class QuestionServiceImpl implements QuestionService {
             questionMapper.create(question);
         }else{
             question.setGmtModified(System.currentTimeMillis());
-            questionMapper.update(question);
+            int updateIndex = questionMapper.update(question);
+            if (updateIndex != 1){
+                throw  new CustomizeException(CustomizeErrorCode.QUESTION_NOT_FOUND);
+            }
         }
 
+    }
+
+    @Override
+    public void insView(Integer id) {
+        questionMapper.updateViewById(id);
     }
 }

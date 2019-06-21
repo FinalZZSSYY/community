@@ -18,8 +18,10 @@ public class QuestionController {
     @GetMapping("/question/{id}")
     public String question(@PathVariable(name = "id")Integer id,
                            Model model){
-        System.out.println(id);
+        //累加阅读数
+        questionServiceImpl.insView(id);
         QuestionDTO questionDTO = questionServiceImpl.getById(id);
+
         model.addAttribute("question", questionDTO);
         return "question";
     }

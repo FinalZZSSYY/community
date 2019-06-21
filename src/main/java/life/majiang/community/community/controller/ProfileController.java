@@ -28,7 +28,6 @@ public class ProfileController {
                           @RequestParam(name = "pageNum", defaultValue = "1") Integer pageNum,
                           @RequestParam(name = "pageSize", defaultValue = "5") Integer pageSize) {
         User user = (User) request.getSession().getAttribute("user");
-        System.out.println(user.getName());
         if (user == null) {
             return "redirect:/";
         }
